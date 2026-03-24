@@ -4,33 +4,35 @@ Codi del meu TFG sobre variants genètiques.
 
 ## Descripció Dataset  – Genetic Variant Classification
 
-#### Tipus d’informació del dataset
+## Tipus d’informació del dataset
+
 El dataset utilitzat combina tres tipus principals d’informació, provinents de diferents fonts i amb diferents nivells de processament:
-#### 1. Dades del variant (crues)
-Variables: CHROM, POS, REF, ALT
-Descriuen el canvi genètic i la seva localització al genoma.
-Representen la informació més bàsica i directa del variant.
-No incorporen interpretació biològica ni clínica.
 
-#### 2. Anotacions de ClinVar (clíniques)
-Variables: CLNDN, CLNDISDB, AF_*, CLNVC, CLASS, etc.
-Provenen de la base de dades ClinVar.
-Inclouen informació clínica i poblacional:
-Malalties associades
-Freqüències en poblacions
-Tipus de variant
-Consens o conflicte entre laboratoris (CLASS)
-Representen coneixement mèdic acumulat.
+### 1. Dades del variant (crues)
+- **Variables:** `CHROM`, `POS`, `REF`, `ALT`
+- Descriuen el canvi genètic i la seva localització al genoma.
+- Representen la informació més bàsica i directa del variant.
+- No incorporen interpretació biològica ni clínica.
 
-#### 3. Anotacions VEP i predictors (bioinformàtica)
-Variables: Consequence, IMPACT, EXON, Protein_position, SIFT, PolyPhen, CADD_*, etc.
-Generades amb Ensembl VEP i altres eines bioinformàtiques.
-Descriuen l’efecte potencial del variant:
-Impacte sobre la proteïna
-Conseqüències funcionals
-Inclouen:
-Regles biològiques (ex: missense_variant)
-Prediccions d’eines externes (ex: SIFT, CADD)
+### 2. Anotacions de ClinVar (clíniques)
+- **Variables:** `CLNDN`, `CLNDISDB`, `AF_*`, `CLNVC`, `CLASS`, etc.
+- Provenen de la base de dades ClinVar.
+- Inclouen informació clínica i poblacional:
+  - Malalties associades
+  - Freqüències en poblacions
+  - Tipus de variant
+  - Consens o conflicte entre laboratoris (`CLASS`)
+- Representen coneixement mèdic acumulat.
+
+### 3. Anotacions VEP i predictors (bioinformàtica)
+- **Variables:** `Consequence`, `IMPACT`, `EXON`, `Protein_position`, `SIFT`, `PolyPhen`, `CADD_*`, etc.
+- Generades amb Ensembl VEP i altres eines bioinformàtiques.
+- Descriuen l’efecte potencial del variant:
+  - Impacte sobre la proteïna
+  - Conseqüències funcionals
+- Inclouen:
+  - Regles biològiques (ex: `missense_variant`)
+  - Prediccions d’eines externes (ex: `SIFT`, `CADD`)
 
 
 
@@ -96,69 +98,102 @@ Prediccions d’eines externes (ex: SIFT, CADD)
 
 
 ## Variables clau de predicció funcional
+
 Algunes variables del dataset tenen un paper especialment rellevant perquè resumeixen informació funcional o estructural sobre la variant. Aquestes variables no són dades crues, sinó anotacions o prediccions generades per eines bioinformàtiques.
-#### SIFT: 
-Predictor bioinformàtic que estima si una substitució aminoacídica pot afectar la funció de la proteïna. En aquest dataset apareix en forma categòrica, amb valors com tolerated, deleterious o deleterious_low_confidence.
 
-#### PolyPhen:
-Predictor que avalua si un canvi aminoacídic pot afectar l’estructura o la funció de la proteïna. En el dataset apareix amb categories com benign, possibly_damaging i probably_damaging.
+### SIFT
+- Predictor bioinformàtic que estima si una substitució aminoacídica pot afectar la funció de la proteïna.
+- Valors típics:
+  - `tolerated`
+  - `deleterious`
+  - `deleterious_low_confidence`
 
-#### CADD_PHRED:
-Score numèric de deleterietat que resumeix com de potencialment perjudicial és una variant. Valors més alts indiquen variants més probablement perjudicials.
+### PolyPhen
+- Predictor que avalua si un canvi aminoacídic pot afectar l’estructura o la funció de la proteïna.
+- Categories:
+  - `benign`
+  - `possibly_damaging`
+  - `probably_damaging`
 
-#### CADD_RAW:
-Versió crua del score CADD. Aporta una mesura contínua de severitat abans de la transformació a escala PHRED.
+### CADD_PHRED
+- Score numèric de deleterietat.
+- Valors més alts indiquen variants més probablement perjudicials.
 
-#### Consequence:
-Anotació funcional que descriu l’efecte molecular de la variant sobre el transcrit o la proteïna, per exemple missense_variant, synonymous_variant o 5_prime_UTR_variant.
+### CADD_RAW
+- Versió crua del score CADD.
+- Mesura contínua abans de l’escalat tipus PHRED.
 
-#### IMPACT:
-Classificació simplificada de la severitat associada a Consequence. Habitualment pren valors com HIGH, MODERATE, LOW o MODIFIER.
-Aquestes variables són especialment importants perquè poden ser molt informatives per a la classificació, però també perquè introdueixen coneixement precomputat per eines externes.
+### Consequence
+- Anotació funcional del tipus de variant.
+- Exemples:
+  - `missense_variant`
+  - `synonymous_variant`
+  - `5_prime_UTR_variant`
 
+### IMPACT
+- Classificació simplificada de la severitat associada a `Consequence`.
+- Valors típics:
+  - `HIGH`
+  - `MODERATE`
+  - `LOW`
+  - `MODIFIER`
+
+> Aquestes variables aporten coneixement funcional precomputat i poden tenir un alt poder predictiu en els models.
 
 ## Procés de construcció del dataset
-El dataset final no prové directament del fitxer VCF original de ClinVar, sinó que es construeix combinant informació de ClinVar amb anotacions funcionals afegides amb Ensembl VEP.
-El procés general és el següent:
 
-#### Lectura del fitxer original de ClinVar (clinvar.vcf.gz)
-Del VCF original s’extreuen les variables clíniques i poblacionals, com ara:
-AF_ESP, AF_EXAC, AF_TGP
-CLNDN, CLNDISDB, CLNHGVS
-CLNVC, CLNVI, MC, ORIGIN, SSR
+El dataset final no prové directament del fitxer VCF original de ClinVar, sinó que es construeix combinant informació clínica amb anotacions funcionals generades per Ensembl VEP.
 
-#### Construcció de la variable objectiu (CLASS)
-El codi assigna:
-CLASS = 0 si la variant no presenta conflicte clínic
-CLASS = 1 si CLNSIGCONF no és nul, és a dir, si hi ha interpretacions clíniques conflictives
+### 1. Lectura del fitxer original (`clinvar.vcf.gz`)
+S’extreuen variables com:
+- `AF_ESP`, `AF_EXAC`, `AF_TGP`
+- `CLNDN`, `CLNDISDB`, `CLNHGVS`
+- `CLNVC`, `CLNVI`, `MC`, `ORIGIN`, `SSR`
 
-#### Filtrat de variants
-Només es conserven variants revisades per múltiples submitters en dues situacions:
-criteria_provided,_multiple_submitters,_no_conflicts
-criteria_provided,_conflicting_interpretations
+### 2. Construcció de la variable objectiu (`CLASS`)
+- `CLASS = 0` → sense conflicte clínic  
+- `CLASS = 1` → amb conflicte (`CLNSIGCONF` no nul)
 
-#### Eliminació de columnes no utilitzades o potencialment problemàtiques
-El script elimina:
-columnes no necessàries (ALLELEID, RS, DBVARID)
-columnes que revelarien directament la classe (CLNSIG, CLNSIGCONF, CLNREVSTAT)
-columnes redundants (CLNVCSO, GENEINFO)
+### 3. Filtrat de variants
+Només es conserven variants amb múltiples submitters:
+- `criteria_provided,_multiple_submitters,_no_conflicts`
+- `criteria_provided,_conflicting_interpretations`
 
-#### Lectura del fitxer anotat amb VEP (clinvar.annotated.vcf.gz)
-Aquest fitxer inclou el camp CSQ, generat per Ensembl VEP, que conté anotacions funcionals i predictors bioinformàtics.
+### 4. Eliminació de columnes
+S’eliminen:
+- No necessàries: `ALLELEID`, `RS`, `DBVARID`
+- Fuita de target: `CLNSIG`, `CLNSIGCONF`, `CLNREVSTAT`
+- Redundants: `CLNVCSO`, `GENEINFO`
 
-#### Parseig del camp CSQ
-El script llegeix la capçalera:
-##INFO=<ID=CSQ,... Format: ...>
-i utilitza aquesta informació per separar els valors del camp CSQ en múltiples columnes, com per exemple:
-Consequence
-IMPACT
-EXON, INTRON
-Protein_position
-SIFT, PolyPhen
-CADD_PHRED, CADD_RAW, BLOSUM62
-Fusió final i exportació a CSV
-Finalment, es combinen les anotacions de ClinVar amb les anotacions de VEP en un únic fitxer final:
-clinvar_conflicting.csv
+### 5. Lectura del fitxer anotat amb VEP (`clinvar.annotated.vcf.gz`)
+Inclou el camp `CSQ` amb anotacions funcionals.
+
+### 6. Parseig del camp `CSQ`
+El camp es descompon en múltiples variables:
+- `Consequence`, `IMPACT`
+- `EXON`, `INTRON`
+- `Protein_position`
+- `SIFT`, `PolyPhen`
+- `CADD_PHRED`, `CADD_RAW`, `BLOSUM62`
+
+### 7. Fusió final i exportació
+Es combinen totes les anotacions en un dataset final:
+- `clinvar_conflicting.csv`
 
 
+## Redundància i derivació entre variables
 
+Algunes variables del dataset no són independents, sinó que contenen informació parcialment redundant o derivada:
+
+- `IMPACT` depèn directament de `Consequence`
+- `MC` i `Consequence` contenen informació funcional similar
+- `SIFT`, `PolyPhen`, `CADD_PHRED`, `CADD_RAW`, `LoFtool` i `BLOSUM62` són predictors o scores externs
+- `AF_ESP`, `AF_EXAC` i `AF_TGP` són mesures de freqüència poblacional potencialment correlacionades
+- `EXON`, `INTRON`, `cDNA_position`, `CDS_position` i `Protein_position` descriuen la localització funcional del variant a diferents nivells
+- `Amino_acids` i `Codons` descriuen el canvi molecular de manera complementària
+
+Això implica que el dataset combina informació crua amb informació ja processada per eines externes, fet que cal tenir en compte tant en la interpretació dels models com en l’anàlisi d’importància de variables.
+
+
+## Fusió final i exportació a CSV
+Finalment, es combinen les anotacions de ClinVar amb les anotacions de VEP en un únic fitxer final: `clinvar_conflicting.csv`.
