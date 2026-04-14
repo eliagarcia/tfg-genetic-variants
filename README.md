@@ -47,16 +47,16 @@ El dataset utilitzat combina tres tipus principals d’informació, provinents d
 #### Taula 2 – Anotacions ClinVar (clíniques)
 | Variable     | Tipus               | Derivada? | Comentari                                  |
 | ------------ | ------------------- | --------- | ------------------------------------------ |
-| AF_ESP       | numèrica            | No gaire  | Freqüència poblacional                     |
-| AF_EXAC      | numèrica            | No gaire  | Freqüència poblacional                     |
-| AF_TGP       | numèrica            | No gaire  | Freqüència poblacional                     |
+| AF_ESP       | numèrica            | No        | Freqüència poblacional                     |
+| AF_EXAC      | numèrica            | No        | Freqüència poblacional                     |
+| AF_TGP       | numèrica            | No        | Freqüència poblacional                     |
 | CLNDISDB     | text multivalor     | Sí        | Bases de dades de malalties                |
 | CLNDISDBINCL | text multivalor     | Sí        | Similar a l’anterior                       |
 | CLNDN        | text multivalor     | Sí        | Noms de malalties                          |
 | CLNDNINCL    | text multivalor     | Sí        | Similar a l’anterior                       |
 | CLNHGVS      | text estructurat    | Sí        | Notació HGVS                               |
 | CLNSIGINCL   | text multivalor     | Sí        | Significances incloses                     |
-| CLNVC        | categòrica          | Sí (lleu) | Tipus de variant                           |
+| CLNVC        | categòrica          | Sí        | Tipus de variant                           |
 | CLNVI        | text multivalor     | Sí        | Identificadors externs                     |
 | MC           | text estructurat    | Sí        | Consequence + codi SO                      |
 | ORIGIN       | categòrica/numèrica | Sí        | Origen de la variant                       |
@@ -81,19 +81,19 @@ El dataset utilitzat combina tres tipus principals d’informació, provinents d
 | Protein_position   | numèrica/text      | Sí        | Posició proteïna               |
 | Amino_acids        | text estructurat   | Sí        | Canvi aminoàcid                |
 | Codons             | text estructurat   | Sí        | Canvi de codó                  |
-| DISTANCE           | numèrica           | Sí (lleu) | Distància a gen                |
-| STRAND             | categòrica         | Sí (lleu) | 1 o -1                         |
+| DISTANCE           | numèrica           | Sí        | Distància a gen                |
+| STRAND             | categòrica         | Sí        | 1 o -1                         |
 | BAM_EDIT           | flag               | Sí        | Anotació tècnica               |
-| SIFT               | categòrica         | Sí (alt)  | Predictor funcional            |
-| PolyPhen           | categòrica         | Sí (alt)  | Predictor funcional            |
+| SIFT               | categòrica         | Sí        | Predictor funcional            |
+| PolyPhen           | categòrica         | Sí        | Predictor funcional            |
 | MOTIF_NAME         | categòrica         | Sí        | Regió reguladora               |
 | MOTIF_POS          | numèrica           | Sí        | Posició                        |
 | HIGH_INF_POS       | flag               | Sí        | Alta informació                |
 | MOTIF_SCORE_CHANGE | numèrica           | Sí        | Canvi score                    |
-| LoFtool            | numèrica           | Sí (alt)  | Score extern                   |
-| CADD_PHRED         | numèrica           | Sí (alt)  | Score de deleterietat          |
-| CADD_RAW           | numèrica           | Sí (alt)  | Score brut                     |
-| BLOSUM62           | numèrica           | Sí (alt)  | Score substitució AA           |
+| LoFtool            | numèrica           | Sí        | Score extern                   |
+| CADD_PHRED         | numèrica           | Sí        | Score de deleterietat          |
+| CADD_RAW           | numèrica           | Sí        | Score brut                     |
+| BLOSUM62           | numèrica           | Sí        | Score substitució AA           |
 
 
 
