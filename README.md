@@ -1,199 +1,109 @@
-# tfg-genetic-variants
-Codi del meu TFG sobre variants genètiques.
+# Predicció de conflictes entre laboratoris i significança clínica de variants genètiques amb aprenentatge automàtic
 
+Treball de Fi de Grau — Classificació automàtica de variants genètiques de ClinVar mitjançant tècniques d'aprenentatge automàtic supervisat.
 
-## Descripció Dataset  – Genetic Variant Classification
+---
 
-## Tipus d’informació del dataset
+## Descripció
 
-El dataset utilitzat combina tres tipus principals d’informació, provinents de diferents fonts i amb diferents nivells de processament:
+Aquest projecte aplica sis models de classificació supervisada per predir dues tasques sobre variants genètiques extretes de la base de dades **ClinVar**:
 
-### 1. Dades del variant (crues)
-- **Variables:** `CHROM`, `POS`, `REF`, `ALT`
-- Descriuen el canvi genètic i la seva localització al genoma.
-- Representen la informació més bàsica i directa del variant.
-- No incorporen interpretació biològica ni clínica.
+- **CLASS** (conflicte entre laboratoris): classificació binària — *No conflictiu* (0) vs. *Conflictiu* (1).
+- **CLNSIG** (significança clínica): classificació multiclasse en tres categories — *Benign* (0), *VUS / Uncertain significance* (1) i *Pathogenic* (2).
 
-### 2. Anotacions de ClinVar (clíniques)
-- **Variables:** `CLNDN`, `CLNDISDB`, `AF_*`, `CLNVC`, `CLASS`, etc.
-- Provenen de la base de dades ClinVar.
-- Inclouen informació clínica i poblacional:
-  - Malalties associades
-  - Freqüències en poblacions
-  - Tipus de variant
-  - Consens o conflicte entre laboratoris (`CLASS`)
-- Representen coneixement mèdic acumulat.
+Per a cadascuna de les dues tasques s'experimenta amb dos conjunts de features:
 
-### 3. Anotacions VEP i predictors (bioinformàtica)
-- **Variables:** `Consequence`, `IMPACT`, `EXON`, `Protein_position`, `SIFT`, `PolyPhen`, `CADD_*`, etc.
-- Generades amb Ensembl VEP i altres eines bioinformàtiques.
-- Descriuen l’efecte potencial del variant:
-  - Impacte sobre la proteïna
-  - Conseqüències funcionals
-- Inclouen:
-  - Regles biològiques (ex: `missense_variant`)
-  - Prediccions d’eines externes (ex: `SIFT`, `CADD`)
+- **Anotat**: inclou les anotacions funcionals de **VEP** (*Variant Effect Predictor*), com SIFT, PolyPhen, CADD, BLOSUM62, LoFtool, etc.
+- **Bàsic**: atributs intrínsecs de la variant sense anotació funcional externa.
 
+---
 
+## Estructura del repositori
 
-#### Taula 1 – Dades del variant (crues)
-| Variable | Tipus      | Comentari            |
-| -------- | ---------- | -------------------- |
-| CHROM    | categòrica | Cromosoma            |
-| POS      | numèrica   | Posició genòmica     |
-| REF      | categòrica | Al·lel de referència |
-| ALT      | categòrica | Al·lel alternatiu    |
+```
+.
+├── data/
+│   └── raw/
+│       ├── clinvar_clnsig_annotated.csv   # Dataset CLNSIG anotat
+│       ├── clinvar_clnsig_basic.csv       # Dataset CLNSIG bàsic (generat al notebook)
+│       ├── clinvar_conflicting.csv        # Dataset CLASS anotat
+│       └── clinvar_class_basic.csv        # Dataset CLASS bàsic (generat al notebook)
+├── notebooks/
+│   ├── clnsig_basic.ipynb                 # CLNSIG — dataset bàsic
+│   ├── clnsig_annotated.ipynb             # CLNSIG — dataset anotat (VEP)
+│   ├── class_basic.ipynb                  # CLASS — dataset bàsic
+│   └── class_annotated.ipynb             # CLASS — dataset anotat (VEP)
+└── README.md
+```
 
-#### Taula 2 – Anotacions ClinVar (clíniques)
-| Variable     | Tipus               | Derivada? | Comentari                                  |
-| ------------ | ------------------- | --------- | ------------------------------------------ |
-| AF_ESP       | numèrica            | No        | Freqüència poblacional                     |
-| AF_EXAC      | numèrica            | No        | Freqüència poblacional                     |
-| AF_TGP       | numèrica            | No        | Freqüència poblacional                     |
-| CLNDISDB     | text multivalor     | Sí        | Bases de dades de malalties                |
-| CLNDISDBINCL | text multivalor     | Sí        | Similar a l’anterior                       |
-| CLNDN        | text multivalor     | Sí        | Noms de malalties                          |
-| CLNDNINCL    | text multivalor     | Sí        | Similar a l’anterior                       |
-| CLNHGVS      | text estructurat    | Sí        | Notació HGVS                               |
-| CLNSIGINCL   | text multivalor     | Sí        | Significances incloses                     |
-| CLNVC        | categòrica          | Sí        | Tipus de variant                           |
-| CLNVI        | text multivalor     | Sí        | Identificadors externs                     |
-| MC           | text estructurat    | Sí        | Consequence + codi SO                      |
-| ORIGIN       | categòrica/numèrica | Sí        | Origen de la variant                       |
-| SSR          | categòrica/numèrica | Sí        | Flag                                       |
-| CLASS        | binària             | Sí        | Variable objectiu (conflicte/no conflicte) |
+---
 
+## Models implementats
 
-#### Taula 3 – Anotacions VEP i predictors
-| Variable           | Tipus              | Derivada? | Comentari                      |
-| ------------------ | ------------------ | --------- | ------------------------------ |
-| Allele             | categòrica         | Sí        | Al·lel usat per VEP            |
-| Consequence        | categòrica         | Sí        | Tipus de conseqüència          |
-| IMPACT             | categòrica ordinal | Sí        | Severitat                      |
-| SYMBOL             | categòrica         | Sí        | Gen                            |
-| Feature_type       | categòrica         | Sí        | Transcript / RegulatoryFeature |
-| Feature            | categòrica         | Sí        | ID del transcrit               |
-| BIOTYPE            | categòrica         | Sí        | Tipus de gen                   |
-| EXON               | text estructurat   | Sí        | Format x/y                     |
-| INTRON             | text estructurat   | Sí        | Format x/y                     |
-| cDNA_position      | numèrica/text      | Sí        | Posició relativa               |
-| CDS_position       | numèrica/text      | Sí        | Posició relativa               |
-| Protein_position   | numèrica/text      | Sí        | Posició proteïna               |
-| Amino_acids        | text estructurat   | Sí        | Canvi aminoàcid                |
-| Codons             | text estructurat   | Sí        | Canvi de codó                  |
-| DISTANCE           | numèrica           | Sí        | Distància a gen                |
-| STRAND             | categòrica         | Sí        | 1 o -1                         |
-| BAM_EDIT           | flag               | Sí        | Anotació tècnica               |
-| SIFT               | categòrica         | Sí        | Predictor funcional            |
-| PolyPhen           | categòrica         | Sí        | Predictor funcional            |
-| MOTIF_NAME         | categòrica         | Sí        | Regió reguladora               |
-| MOTIF_POS          | numèrica           | Sí        | Posició                        |
-| HIGH_INF_POS       | flag               | Sí        | Alta informació                |
-| MOTIF_SCORE_CHANGE | numèrica           | Sí        | Canvi score                    |
-| LoFtool            | numèrica           | Sí        | Score extern                   |
-| CADD_PHRED         | numèrica           | Sí        | Score de deleterietat          |
-| CADD_RAW           | numèrica           | Sí        | Score brut                     |
-| BLOSUM62           | numèrica           | Sí        | Score substitució AA           |
+Cada notebook entrena i avalua els sis mateixos models:
 
+1. **LinearSVC** (`LinearSVC`)
+2. **Logistic Regression L1** — Lasso (`LogisticRegression(penalty='l1')`)
+3. **Logistic Regression L2** — Ridge (`LogisticRegression(penalty='l2')`)
+4. **Decision Tree** (`DecisionTreeClassifier`)
+5. **Random Forest** (`RandomForestClassifier`)
+6. **MLP** — Xarxa neuronal multicapa (`MLPClassifier`)
 
+L'optimització d'hiperparàmetres es fa amb **`GridSearchCV`** i **`RandomizedSearchCV`** amb validació creuada estratificada (`StratifiedKFold`).
 
-## Variables clau de predicció funcional
+---
 
-Algunes variables del dataset tenen un paper especialment rellevant perquè resumeixen informació funcional o estructural sobre la variant. Aquestes variables no són dades crues, sinó anotacions o prediccions generades per eines bioinformàtiques.
+## Pipeline de preprocessament
 
-### SIFT
-- Predictor bioinformàtic que estima si una substitució aminoacídica pot afectar la funció de la proteïna.
-- Valors típics:
-  - `tolerated`
-  - `deleterious`
-  - `deleterious_low_confidence`
+Per a tots els notebooks s'aplica el mateix pipeline:
 
-### PolyPhen
-- Predictor que avalua si un canvi aminoacídic pot afectar l’estructura o la funció de la proteïna.
-- Categories:
-  - `benign`
-  - `possibly_damaging`
-  - `probably_damaging`
+- Eliminació de columnes amb >95% de valors nuls i columnes VEP (en versió bàsica).
+- Imputació de valors faltants: mediana per a numèriques, moda per a categòriques (`SimpleImputer`).
+- Escalat de variables numèriques amb `StandardScaler`.
+- Codificació de variables categòriques amb `OneHotEncoder` (`min_frequency=20`).
+- Partició **90% train+val / 10% test** estratificada (`random_state=42`).
 
-### CADD_PHRED
-- Score numèric de deleterietat.
-- Valors més alts indiquen variants més probablement perjudicials.
+---
 
-### CADD_RAW
-- Versió crua del score CADD.
-- Mesura contínua abans de l’escalat tipus PHRED.
+## Avaluació i interpretabilitat
 
-### Consequence
-- Anotació funcional del tipus de variant.
-- Exemples:
-  - `missense_variant`
-  - `synonymous_variant`
-  - `5_prime_UTR_variant`
+Mètriques reportades per a cada model:
 
-### IMPACT
-- Classificació simplificada de la severitat associada a `Consequence`.
-- Valors típics:
-  - `HIGH`
-  - `MODERATE`
-  - `LOW`
-  - `MODIFIER`
+- F1-score macro i per classe
+- Accuracy
+- ROC-AUC (one-vs-rest)
+- Matriu de confusió
 
-> Aquestes variables aporten coneixement funcional precomputat i poden tenir un alt poder predictiu en els models.
+Interpretabilitat amb **SHAP**:
 
-## Procés de construcció del dataset
+- Summary plots (importància global de features)
+- Bar charts comparatius per classe
+- Anàlisi de les features més rellevants per a cada model
 
-El dataset final no prové directament del fitxer VCF original de ClinVar, sinó que es construeix combinant informació clínica amb anotacions funcionals generades per Ensembl VEP.
+---
 
-### 1. Lectura del fitxer original (`clinvar.vcf.gz`)
-S’extreuen variables com:
-- `AF_ESP`, `AF_EXAC`, `AF_TGP`
-- `CLNDN`, `CLNDISDB`, `CLNHGVS`
-- `CLNVC`, `CLNVI`, `MC`, `ORIGIN`, `SSR`
+## Requisits
 
-### 2. Construcció de la variable objectiu (`CLASS`)
-- `CLASS = 0` → sense conflicte clínic  
-- `CLASS = 1` → amb conflicte (`CLNSIGCONF` no nul)
+```
+python >= 3.9
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+shap
+scipy
+```
 
-### 3. Filtrat de variants
-Només es conserven variants amb múltiples submitters:
-- `criteria_provided,_multiple_submitters,_no_conflicts`
-- `criteria_provided,_conflicting_interpretations`
+---
 
-### 4. Eliminació de columnes
-S’eliminen:
-- No necessàries: `ALLELEID`, `RS`, `DBVARID`
-- Fuita de target: `CLNSIG`, `CLNSIGCONF`, `CLNREVSTAT`
-- Redundants: `CLNVCSO`, `GENEINFO`
+## Dades
 
-### 5. Lectura del fitxer anotat amb VEP (`clinvar.annotated.vcf.gz`)
-Inclou el camp `CSQ` amb anotacions funcionals.
+Les dades provenen de la base de dades pública [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/) del NCBI. Les anotacions funcionals s'han obtingut amb l'[Ensembl Variant Effect Predictor (VEP)](https://www.ensembl.org/Tools/VEP).
 
-### 6. Parseig del camp `CSQ`
-El camp es descompon en múltiples variables:
-- `Consequence`, `IMPACT`
-- `EXON`, `INTRON`
-- `Protein_position`
-- `SIFT`, `PolyPhen`
-- `CADD_PHRED`, `CADD_RAW`, `BLOSUM62`
+---
 
-### 7. Fusió final i exportació
-Es combinen totes les anotacions en un dataset final:
-- `clinvar_conflicting.csv`
+Treball de Fi de Grau — Enginyeria Informàtica
+Universitat de Barcelona · 2026
 
-
-## Redundància i derivació entre variables
-
-Algunes variables del dataset no són independents, sinó que contenen informació parcialment redundant o derivada:
-
-- `IMPACT` depèn directament de `Consequence`
-- `MC` i `Consequence` contenen informació funcional similar
-- `SIFT`, `PolyPhen`, `CADD_PHRED`, `CADD_RAW`, `LoFtool` i `BLOSUM62` són predictors o scores externs
-- `AF_ESP`, `AF_EXAC` i `AF_TGP` són mesures de freqüència poblacional potencialment correlacionades
-- `EXON`, `INTRON`, `cDNA_position`, `CDS_position` i `Protein_position` descriuen la localització funcional del variant a diferents nivells
-- `Amino_acids` i `Codons` descriuen el canvi molecular de manera complementària
-
-Això implica que el dataset combina informació crua amb informació ja processada per eines externes, fet que cal tenir en compte tant en la interpretació dels models com en l’anàlisi d’importància de variables.
-
-
-## Fusió final i exportació a CSV
-Finalment, es combinen les anotacions de ClinVar amb les anotacions de VEP en un únic fitxer final: `clinvar_conflicting.csv`.
+Èlia Garcia Rovira
